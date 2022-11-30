@@ -29,6 +29,9 @@ var (
 	}
 )
 
+// List of valid words to choose from
+var validWords []string
+
 func GetValidWordList() []string {
 	readFile, _ := os.Open("words.txt")
 	fileScanner := bufio.NewScanner(readFile)
@@ -68,9 +71,20 @@ func GetWordFeedback(word string) {
 	fmt.Println(feedback)
 }
 
-func main() {
-	words := GetValidWordList()
-	fmt.Println(words)
+func RemoveInvalidWords(feedback Feedback) {
+	// TODO: Go through all feedbacks (right place, wrong place, or not exists)
+	//		 and remove words in the validWords that aren't possible answers
+}
 
-	GetWordFeedback(words[0])
+func ChooseNextBestGuess() string {
+	// TODO: Using some kind of heuristics, choose the next best word to pick
+
+	return validWords[0]
+}
+
+func main() {
+	validWords = GetValidWordList()
+	fmt.Println(validWords)
+
+	GetWordFeedback(validWords[0])
 }
