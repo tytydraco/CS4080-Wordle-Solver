@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func read_dictionary() []string {
+func GetValidWordList() []string {
 	readFile, _ := os.Open("words.txt")
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
@@ -22,6 +22,6 @@ func read_dictionary() []string {
 }
 
 func main() {
-	words := read_dictionary()
+	words := GetValidWordList()
 	fmt.Println(words)
 }
