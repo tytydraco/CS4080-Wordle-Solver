@@ -8,6 +8,7 @@ import (
 )
 
 const WORD_LEN = 5
+const NUM_TRIES = 6
 
 type Feedback string
 
@@ -47,11 +48,10 @@ func GetValidWordList() []string {
 	return fileLines
 }
 
-func GetWordFeedback(word string) {
+func GetWordFeedback(word string) []Feedback {
 	letters := strings.Split(word, "")
-	feedback := new([WORD_LEN]Feedback)
+	feedback := make([]Feedback, 5)
 
-	fmt.Printf(" --- Feedback for %s --- \n", word)
 	for i, v := range letters {
 		var letterFeedbackStr string
 		fmt.Printf("%s: ", v)
@@ -68,12 +68,15 @@ func GetWordFeedback(word string) {
 		feedback[i] = letterFeedback
 	}
 
-	fmt.Println(feedback)
+	return feedback
 }
 
-func RemoveInvalidWords(feedback Feedback) {
+func RemoveInvalidWords(feedback []Feedback) int {
 	// TODO: Go through all feedbacks (right place, wrong place, or not exists)
-	//		 and remove words in the validWords that aren't possible answers
+	//		 and remove words in the validWords that aren't possible answers.
+	//		 Return the number of entries eliminated.
+
+	return 0
 }
 
 func ChooseNextBestGuess() string {
@@ -84,7 +87,19 @@ func ChooseNextBestGuess() string {
 
 func main() {
 	validWords = GetValidWordList()
-	fmt.Println(validWords)
+	fmt.Println(len(validWords))
 
-	GetWordFeedback(validWords[0])
+	for i := 0; i < NUM_TRIES; i++ {
+		fmt.Printf("Attempt %d/%d\n", i+1, NUM_TRIES)
+		nextBestGuess := ChooseNextBestGuess()
+
+		fmt.Printf("Best pick: %s\n", nextBestGuess)
+		feedback := GetWordFeedback(nextBestGuess)
+		// TODO: If all correct, we win!
+
+		removed := RemoveInvalidWords(feedback)
+		// TODO: Also remove our guess
+		fmt.Printf("Eliminated %d words!\n", removed)
+		fmt.Println()
+	}
 }
