@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strings"
 )
@@ -72,26 +71,14 @@ func LetterFrequency(possibleWords []string) []map[byte]int {
 
 // WordScore calculates a score for each word in possibleWords based on the frequencies and
 // returns a map of the word to its score.
-func WordScore(possibleWords []string, frequencies []map[byte]int) map[string]float64 {
-	scores := make(map[string]float64)
-	maxFreq := make([]int, WORD_LEN)
+func WordScore(possibleWords []string, frequencies []map[byte]int) map[string]int {
+	scores := make(map[string]int)
 
-	// Get the max frequency in each position
-	for i, v := range frequencies {
-		for _, freq := range v {
-			if freq > maxFreq[i] {
-				maxFreq[i] = freq
-			}
-		}
-	}
-
-	// Calculate the score for each word by taking the difference of the
-	// maximum frequency at each position and the frequency of the letter in the word at that position
+	// Calculate the score for each word by summing the frequencies at each position
 	for _, word := range possibleWords {
-		wordScore := float64(1)
+		wordScore := 0
 		for i, v := range word {
-			freqDiff := float64(frequencies[i][byte(v)] - maxFreq[i])
-			wordScore += 1 + math.Pow(freqDiff, 2)
+			wordScore += frequencies[i][byte(v)]
 		}
 		scores[word] = wordScore
 	}
@@ -206,7 +193,7 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 // ChooseNextBestGuess calculates the highest score from possibleWords and returns
 // the word with the highest score.
 func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) string {
-	maxScore := 0.0
+	maxScore := 0
 	bestWord := "words"
 	scores := WordScore(possibleWords, frequencies)
 
