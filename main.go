@@ -226,6 +226,16 @@ func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) str
 	return bestWord
 }
 
+func allCorrect(feedback []Feedback) bool {
+	for _, i := range feedback {
+		if i != Correct {
+			return false
+		}
+	}
+
+	return true
+}
+
 func main() {
 	validWords = GetValidWordList()
 	unorderedWords = make(map[string]int)
@@ -237,7 +247,11 @@ func main() {
 
 		fmt.Printf("Best pick: %s\n", nextBestGuess)
 		feedback := GetWordFeedback(nextBestGuess)
-		// TODO: If all correct, we win!
+
+		if allCorrect(feedback) {
+			fmt.Println("My work here is done :-)")
+			break
+		}
 
 		removed := RemoveInvalidWords(feedback, nextBestGuess)
 		// TODO: Also remove our guess
