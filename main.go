@@ -124,9 +124,27 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 	var invalidWords int = 0
 
 	//	Create a nonexistent letter map
-	for j, letter := range feedback {
+	for j, letter := range feedback { //Adds non exsistent letters into nonexsistentLetters map
 		if letter == Nonexistent {
 			nonexistentLetters[guessLetters[j]] = 0
+		}
+	}
+
+	//This loop checks to see if letters have been incorrectly added to the nonexsistenLetters map. If it has, it removes them from the map
+	/*
+		Example:
+			Sores
+			The first s is correct, the second s is nonexsistent
+			Without this loop, s would be added to the nonexsistentLetters list and s would be considered to not exsist at all in the word
+				This causes a problem, s IS in the word, it's just only present in the first space and not anywhere else
+			This loop iterates through the word twice and checks if the letter occurs twice, and was given different ratings in both occurances
+				If it does, and one of those instances it was rated as Nonexsistent, it is removed from the nonexsistent list as it does exsist, just not in that spot
+	*/
+	for i, letter := range feedback {
+		for j, checkLetter := range feedback {
+			if guessLetters[i] == guessLetters[j] && ((letter == Nonexistent && checkLetter != Nonexistent) || (checkLetter == Nonexistent && letter != Nonexistent)) {
+				delete(nonexistentLetters, guessLetters[i])
+			}
 		}
 	}
 
@@ -157,7 +175,7 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 			}
 
 			//	Checks if word contains nonexistent characters
-			if nonexistent {
+			if nonexistent && !letterIsPresent {
 				invalidWordsMap[v] = 0
 				invalidWords++
 				break
