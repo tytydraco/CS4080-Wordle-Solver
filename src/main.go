@@ -81,8 +81,9 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 	// Keep track of the letters that were not present in the word at all.
 	incorrectLetters := make(map[string]struct{})
 	keptLetters := make(map[string]struct{})
-	for i, correctness := range letterCorrectness {
-		guessLetter := guessLetters[i]
+
+	for position, correctness := range letterCorrectness {
+		guessLetter := guessLetters[position]
 
 		// Determine if we already decided that we need this letter.
 		_, letterAlreadyAdded := keptLetters[guessLetter]
@@ -127,6 +128,15 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 
 				// Add this letter to the set of letters that are out of order.
 				outOfOrderChars[currentLetter] = exists
+
+				goto markAsIncorrect
+			}
+
+			// Checks if the letter is incorrect at this position.
+			if correctness == Incorrect && currentLetter == guessLetter {
+				if DEBUG {
+					fmt.Printf("[D] (2.5) removed '%s': '%s' is always wrong in pos\n", validWord, currentLetter)
+				}
 
 				goto markAsIncorrect
 			}
