@@ -66,30 +66,36 @@ func WordScore(possibleWords []string, frequencies []map[byte]int) map[string]in
 	return scores
 }
 
+// Ask the user for which letters from the guess word were correct.
 func GetWordFeedback(word string) []LetterCorrectness {
 	letters := strings.Split(word, "")
 	feedback := make([]LetterCorrectness, 5)
 
-	for i, v := range letters {
-	letterFeedback:
+	fmt.Printf("\nGive feedback for word: %s\n", word)
+	fmt.Printf("--- ([c]orrect, [o]ut-of-order, [i]ncorrect, [q]uit) ---\n")
+
+	// Get feedback for each letter.
+	for i, letter := range letters {
+	askFeedback:
 		var letterFeedbackStr string
-		fmt.Printf("%s: ", v)
+		fmt.Printf("%s: ", letter)
 		fmt.Scanf("%s\n", &letterFeedbackStr)
 
+		// Allow the user to quit.
 		if letterFeedbackStr == "q" {
 			fmt.Println("Goodbye :)")
 			os.Exit(0)
 		}
 
-		letterFeedback, isPresent := letterCorrectnessMap[letterFeedbackStr]
+		letterCorrectness, isValidChar := letterCorrectnessMap[letterFeedbackStr]
 
-		// Todo: make this better
-		for !isPresent {
+		// If the user entered an invalid character, ask them again.
+		for !isValidChar {
 			fmt.Println("Bad feedback! Try again.")
-			goto letterFeedback
+			goto askFeedback
 		}
 
-		feedback[i] = letterFeedback
+		feedback[i] = letterCorrectness
 	}
 
 	return feedback
