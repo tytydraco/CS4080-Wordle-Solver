@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+const DEBUG = true
 const WORD_LEN = 5
 const NUM_TRIES = 6
 
@@ -119,6 +120,9 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 
 			// Checks if the correct guess letter does not match the position in the current word.
 			if correctness == Correct && currentLetter != guessLetter {
+				if DEBUG {
+					fmt.Printf("[D] (1) removed '%s': '%s' does not match\n", validWord, currentLetter)
+				}
 				invalidWords[validWord] = exists
 				removedWordsCount++
 				break
@@ -127,6 +131,10 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 			// Checks if the current guess letter is supposed to be incorrectly positioned (but exists!), yet
 			// matches the correct position in the current word.
 			if correctness == OutOfOrder && currentLetter == guessLetter {
+				if DEBUG {
+					fmt.Printf("[D] (2) removed '%s': '%s' should not match\n", validWord, currentLetter)
+				}
+
 				invalidWords[validWord] = exists
 				removedWordsCount++
 
@@ -141,6 +149,10 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 			_, letterIsIncorrect := incorrectLetters[currentLetter]
 			_, letterIsOutOfOrder := outOfOrderChars[currentLetter]
 			if letterIsIncorrect && !letterIsOutOfOrder {
+				if DEBUG {
+					fmt.Printf("[D] (3) removed '%s': '%s' is incorrect and in order\n", validWord, currentLetter)
+				}
+
 				invalidWords[validWord] = exists
 				removedWordsCount++
 				break
@@ -153,6 +165,10 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 		}
 
 		if len(outOfOrderChars) != 0 && outOfOrderLettersCount < len(outOfOrderChars) {
+			if DEBUG {
+				fmt.Printf("[D] (4) removed '%s': not enough out-of-order chars (%d/%d)\n", validWord, outOfOrderLettersCount, len(outOfOrderChars))
+			}
+
 			invalidWords[validWord] = exists
 			removedWordsCount++
 		}
