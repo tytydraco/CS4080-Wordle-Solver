@@ -236,6 +236,7 @@ func main() {
 		// Check if the user won, and exit if they did.
 		if DidUserWin(feedback) {
 			fmt.Println("My work here is done :-)")
+			fmt.Printf("Guessed the answer in %d/%d tries.\n", i+1, NUM_TRIES)
 			break
 		}
 
