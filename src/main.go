@@ -104,7 +104,7 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 	removedWordsCount := 0
 
 	for _, validWord := range validWords {
-		outOfOrderLettersCount := 0
+		outOfOrderCount := 0
 		validWordLetters := strings.Split(validWord, "")
 		for i, correctness := range letterCorrectness {
 			currentLetter := validWordLetters[i]
@@ -141,7 +141,7 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 				goto markAsIncorrect
 			}
 
-			// Checks if the letter is supposed be incorrect, and it's also not in the wrong order (implying it is definitely incorrect).
+			// Checks if the letter is incorrect, and it's also not in the wrong order (implying it is definitely incorrect).
 			_, letterIsIncorrect := incorrectLetters[currentLetter]
 			_, letterIsOutOfOrder := outOfOrderChars[currentLetter]
 			if letterIsIncorrect && !letterIsOutOfOrder {
@@ -152,16 +152,17 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 				goto markAsIncorrect
 			}
 
-			// Checks if a nonexistent character is in the word
+			// If this letter is out-of-order in the word, but we have not eliminated'
+			// the word yet, then keep track.
 			if letterIsOutOfOrder {
-				outOfOrderLettersCount++
+				outOfOrderCount++
 			}
 		}
 
-		// TODO(tytydraco): make sure this works
-		if len(outOfOrderChars) != 0 && outOfOrderLettersCount < len(outOfOrderChars) {
+		// Make sure that if we are expecting out-of-order letters, that this word has the right amount of them.
+		if len(outOfOrderChars) != 0 && outOfOrderCount < len(outOfOrderChars) {
 			if DEBUG {
-				fmt.Printf("[D] (4) removed '%s': not enough out-of-order chars (%d/%d)\n", validWord, outOfOrderLettersCount, len(outOfOrderChars))
+				fmt.Printf("[D] (4) removed '%s': not enough out-of-order chars (%d/%d)\n", validWord, outOfOrderCount, len(outOfOrderChars))
 			}
 
 			goto markAsIncorrect
@@ -173,6 +174,23 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 	markAsIncorrect:
 		invalidWords[validWord] = exists
 		removedWordsCount++
+	}
+
+	// Make sure that the next word we pick still contains the necessary out-of-order letters.
+	for _, validWord := range validWords {
+		if len(outOfOrderChars) != 0 {
+			fmt.Printf("There should be %s\n", outOfOrderChars)
+			for outOfOrderChar := range outOfOrderChars {
+				if !strings.Contains(validWord, outOfOrderChar) {
+					if DEBUG {
+						fmt.Printf("[D] (5) removed '%s': missing out-of-order char '%s'\n", validWord, outOfOrderChar)
+					}
+
+					invalidWords[validWord] = exists
+					removedWordsCount++
+				}
+			}
+		}
 	}
 
 	// Update the list of possible valid word picks.
