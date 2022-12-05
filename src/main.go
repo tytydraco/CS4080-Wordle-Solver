@@ -36,12 +36,14 @@ func GetWordFeedback(word string) []LetterCorrectness {
 	letters := strings.Split(word, "")
 	feedback := make([]LetterCorrectness, 5)
 
+askWordFeedback:
+
 	fmt.Printf("\nGive feedback for word: %s\n", word)
-	fmt.Printf("--- ([c]orrect, [o]ut-of-order, [i]ncorrect, [q]uit) ---\n")
+	fmt.Printf("--- ([c]orrect, [o]ut-of-order, [i]ncorrect, [q]uit, [r]eset) ---\n")
 
 	// Get feedback for each letter.
 	for i, letter := range letters {
-	askFeedback:
+	askLetterFeedback:
 		var letterFeedbackStr string
 		fmt.Printf("%s: ", letter)
 		fmt.Scanf("%s\n", &letterFeedbackStr)
@@ -52,12 +54,17 @@ func GetWordFeedback(word string) []LetterCorrectness {
 			os.Exit(0)
 		}
 
+		// Allow the user to reset their feedbacks.
+		if letterFeedbackStr == "r" {
+			goto askWordFeedback
+		}
+
 		letterCorrectness, isValidChar := letterCorrectnessMap[letterFeedbackStr]
 
 		// If the user entered an invalid character, ask them again.
 		for !isValidChar {
 			fmt.Println("Bad feedback! Try again.")
-			goto askFeedback
+			goto askLetterFeedback
 		}
 
 		feedback[i] = letterCorrectness
