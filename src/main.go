@@ -10,26 +10,6 @@ import (
 const WORD_LEN = 5
 const NUM_TRIES = 6
 
-type LetterCorrectness string
-
-const (
-	Correct    = "c"
-	OutOfOrder = "o"
-	Incorrect  = "i"
-)
-
-func (feedback LetterCorrectness) String() string {
-	return string(feedback)
-}
-
-var (
-	feedbackMap = map[string]LetterCorrectness{
-		"c": Correct,
-		"o": OutOfOrder,
-		"i": Incorrect,
-	}
-)
-
 // List of valid words to choose from
 var validWords []string
 
@@ -95,7 +75,7 @@ func GetWordFeedback(word string) []LetterCorrectness {
 		fmt.Printf("%s: ", v)
 		fmt.Scanf("%s\n", &letterFeedbackStr)
 
-		letterFeedback, isPresent := feedbackMap[letterFeedbackStr]
+		letterFeedback, isPresent := letterCorrectmessMap[letterFeedbackStr]
 
 		// Todo: make this better
 		for !isPresent {
@@ -103,7 +83,7 @@ func GetWordFeedback(word string) []LetterCorrectness {
 			fmt.Printf("%s: ", v)
 			fmt.Scanf("%s\n", &letterFeedbackStr)
 
-			_, valid := feedbackMap[letterFeedbackStr]
+			_, valid := letterCorrectmessMap[letterFeedbackStr]
 			isPresent = valid
 		}
 
