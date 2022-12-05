@@ -258,7 +258,8 @@ func main() {
 
 		// Tell the user how many words we were able to eliminate.
 		removed := RemoveInvalidWords(feedback, nextBestGuess)
-		fmt.Printf("Eliminated %d words!\n\n", removed)
+		fmt.Printf("Eliminated %d words!\n", removed)
+		fmt.Printf("%d words left.\n\n", len(validWords))
 
 		// Uh oh... we're out of words...
 		if len(validWords) == 0 {
