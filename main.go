@@ -10,23 +10,23 @@ import (
 const WORD_LEN = 5
 const NUM_TRIES = 6
 
-type Feedback string
+type LetterCorrectness string
 
 const (
-	Correct     = "c"
-	Unordered   = "u"
-	Nonexistent = "n"
+	Correct    = "c"
+	OutOfOrder = "o"
+	Incorrect  = "i"
 )
 
-func (feedback Feedback) String() string {
+func (feedback LetterCorrectness) String() string {
 	return string(feedback)
 }
 
 var (
-	feedbackMap = map[string]Feedback{
+	feedbackMap = map[string]LetterCorrectness{
 		"c": Correct,
-		"u": Unordered,
-		"n": Nonexistent,
+		"o": OutOfOrder,
+		"i": Incorrect,
 	}
 )
 
@@ -86,9 +86,9 @@ func WordScore(possibleWords []string, frequencies []map[byte]int) map[string]in
 	return scores
 }
 
-func GetWordFeedback(word string) []Feedback {
+func GetWordFeedback(word string) []LetterCorrectness {
 	letters := strings.Split(word, "")
-	feedback := make([]Feedback, 5)
+	feedback := make([]LetterCorrectness, 5)
 
 	for i, v := range letters {
 		var letterFeedbackStr string
@@ -113,7 +113,7 @@ func GetWordFeedback(word string) []Feedback {
 	return feedback
 }
 
-func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
+func RemoveInvalidWords(feedback []LetterCorrectness, bestGuess string) int {
 	// TODO: Go through all feedbacks (right place, wrong place, or not exists)
 	//		 and remove words in the validWords that aren't possible answers.
 	//		 Return the number of entries eliminated.
@@ -125,7 +125,7 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 
 	//	Create a nonexistent letter map
 	for j, letter := range feedback { //Adds non exsistent letters into nonexsistentLetters map
-		if letter == Nonexistent {
+		if letter == Incorrect {
 			nonexistentLetters[guessLetters[j]] = 0
 		}
 	}
@@ -142,7 +142,7 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 	*/
 	for i, letter := range feedback {
 		for j, checkLetter := range feedback {
-			if guessLetters[i] == guessLetters[j] && ((letter == Nonexistent && checkLetter != Nonexistent) || (checkLetter == Nonexistent && letter != Nonexistent)) {
+			if guessLetters[i] == guessLetters[j] && ((letter == Incorrect && checkLetter != Incorrect) || (checkLetter == Incorrect && letter != Incorrect)) {
 				delete(nonexistentLetters, guessLetters[i])
 			}
 		}
@@ -165,7 +165,7 @@ func RemoveInvalidWords(feedback []Feedback, bestGuess string) int {
 			}
 
 			//	Checks if word has unordered characters
-			if validLetters[j] == guessLetters[j] && feedback[j] == Unordered {
+			if validLetters[j] == guessLetters[j] && feedback[j] == OutOfOrder {
 				invalidWordsMap[v] = 0
 				invalidWords++
 				if !letterIsPresent {
@@ -226,7 +226,7 @@ func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) str
 	return bestWord
 }
 
-func allCorrect(feedback []Feedback) bool {
+func allCorrect(feedback []LetterCorrectness) bool {
 	for _, i := range feedback {
 		if i != Correct {
 			return false
