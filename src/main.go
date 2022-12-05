@@ -77,13 +77,13 @@ askWordFeedback:
 // Given feedback from the user and the best guess we recommended, eliminate words that are definitely not the answer.
 func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string) int {
 	guessLetters := strings.Split(bestGuess, "")
-	incorrectLetters := make(map[string]int)
 
 	// Keep track of the letters that were not present in the word at all.
+	incorrectLetters := make(map[string]struct{})
 	for i, correctness := range letterCorrectness {
 		if correctness == Incorrect {
 			guessLetter := guessLetters[i]
-			incorrectLetters[guessLetter] = 0
+			incorrectLetters[guessLetter] = exists
 		}
 	}
 
