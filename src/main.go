@@ -135,19 +135,18 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 			// Checks if the letter is incorrect at this position.
 			if correctness == Incorrect && currentLetter == guessLetter {
 				if DEBUG {
-					fmt.Printf("[D] (2.5) removed '%s': '%s' is always wrong in pos\n", validWord, currentLetter)
+					fmt.Printf("[D] (2.5) removed '%s': '%s' is incorrect\n", validWord, currentLetter)
 				}
 
 				goto markAsIncorrect
 			}
 
-			// TODO(tytydraco): Refactor this bit.
-			// Checks if the current letter is not supposed to be in the word.
+			// Checks if the letter is supposed be incorrect, and it's also not in the wrong order (implying it is definitely incorrect).
 			_, letterIsIncorrect := incorrectLetters[currentLetter]
 			_, letterIsOutOfOrder := outOfOrderChars[currentLetter]
 			if letterIsIncorrect && !letterIsOutOfOrder {
 				if DEBUG {
-					fmt.Printf("[D] (3) removed '%s': '%s' is incorrect and in order\n", validWord, currentLetter)
+					fmt.Printf("[D] (3) removed '%s': '%s' is incorrect and not out-of-order\n", validWord, currentLetter)
 				}
 
 				goto markAsIncorrect
