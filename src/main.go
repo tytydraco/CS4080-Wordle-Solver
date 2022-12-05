@@ -12,39 +12,23 @@ const NUM_TRIES = 6
 // Empty struct indicating that in item exists in a set.
 var exists = struct{}{}
 
-// LetterFrequency calculates the frequency of each letter in each word of the possibleWords and
-// returns a slice of maps, where each map is a map of the letter to its frequency in that position.
-func LetterFrequency(possibleWords []string) []map[byte]int {
-	freq := make([]map[byte]int, WORD_LEN)
+// Calculate the frequencies that letters appear in each position in the list of valid words.
+func GetLetterFrequencies() []map[rune]int {
+	letterPositionFreqs := make([]map[rune]int, WORD_LEN)
 
+	// Create a letter frequency map for each possible letter position.
 	for i := 0; i < WORD_LEN; i++ {
-		freq[i] = make(map[byte]int)
+		letterPositionFreqs[i] = make(map[rune]int)
 	}
 
-	for _, word := range possibleWords {
-		for i, v := range word {
-			freq[i][byte(v)]++
+	// Sum up the number of letter occurances in each possible letter position.
+	for _, word := range validWords {
+		for position, letter := range word {
+			letterPositionFreqs[position][letter]++
 		}
 	}
 
-	return freq
-}
-
-// WordScore calculates a score for each word in possibleWords based on the frequencies and
-// returns a map of the word to its score.
-func WordScore(possibleWords []string, frequencies []map[byte]int) map[string]int {
-	scores := make(map[string]int)
-
-	// Calculate the score for each word by summing the frequencies at each position
-	for _, word := range possibleWords {
-		wordScore := 0
-		for i, v := range word {
-			wordScore += frequencies[i][byte(v)]
-		}
-		scores[word] = wordScore
-	}
-
-	return scores
+	return letterPositionFreqs
 }
 
 // Ask the user for which letters from the guess word were correct.
@@ -182,13 +166,30 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 	return removedWordsCount
 }
 
+// Returns a map of words corresponding to its score in terms of how likely this word is to be the answer.
+func GetWordScores(frequencies []map[rune]int) map[string]int {
+	wordScores := make(map[string]int)
+
+	// Sum up the frequency of letter occurances to determine a score.
+	for _, word := range validWords {
+		wordScore := 0
+		for position, letter := range word {
+			wordScore += frequencies[position][letter]
+		}
+		wordScores[word] = wordScore
+	}
+
+	return wordScores
+}
+
 // Calculate the highest score from possibleWords and returns the word with the highest score.
-func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) string {
+func GetNextBestGuess() string {
+	letterFrequencies := GetLetterFrequencies()
+	scores := GetWordScores(letterFrequencies)
+
+	// Get the word with the highest score.
 	maxScore := 0
 	var bestWord string
-	scores := WordScore(possibleWords, frequencies)
-
-	// Get the word with the highest score
 	for word, score := range scores {
 		if score > maxScore {
 			maxScore = score
@@ -219,7 +220,7 @@ func main() {
 		fmt.Printf("Attempt %d/%d\n", i+1, NUM_TRIES)
 
 		// Pick which word the user should guess.
-		nextBestGuess := ChooseNextBestGuess(validWords, LetterFrequency(validWords))
+		nextBestGuess := GetNextBestGuess()
 		fmt.Printf("Best pick: %s\n", nextBestGuess)
 
 		// Collect feedback on how we did.
