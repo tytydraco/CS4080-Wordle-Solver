@@ -93,6 +93,7 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 		} else {
 			// We need this letter!
 			keptLetters[guessLetter] = exists
+			delete(incorrectLetters, guessLetter)
 		}
 	}
 
