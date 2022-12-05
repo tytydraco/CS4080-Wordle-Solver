@@ -114,9 +114,8 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 				if DEBUG {
 					fmt.Printf("[D] (1) removed '%s': '%s' does not match\n", validWord, currentLetter)
 				}
-				invalidWords[validWord] = exists
-				removedWordsCount++
-				break
+
+				goto markAsIncorrect
 			}
 
 			// Checks if the current guess letter is supposed to be incorrectly positioned (but exists!), yet
@@ -126,13 +125,10 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 					fmt.Printf("[D] (2) removed '%s': '%s' should not match\n", validWord, currentLetter)
 				}
 
-				invalidWords[validWord] = exists
-				removedWordsCount++
-
 				// Add this letter to the set of letters that are out of order.
 				outOfOrderChars[currentLetter] = exists
 
-				break
+				goto markAsIncorrect
 			}
 
 			// TODO(tytydraco): Refactor this bit.
@@ -144,9 +140,7 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 					fmt.Printf("[D] (3) removed '%s': '%s' is incorrect and in order\n", validWord, currentLetter)
 				}
 
-				invalidWords[validWord] = exists
-				removedWordsCount++
-				break
+				goto markAsIncorrect
 			}
 
 			// Checks if a nonexistent character is in the word
@@ -155,14 +149,21 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 			}
 		}
 
+		// TODO(tytydraco): make sure this works
 		if len(outOfOrderChars) != 0 && outOfOrderLettersCount < len(outOfOrderChars) {
 			if DEBUG {
 				fmt.Printf("[D] (4) removed '%s': not enough out-of-order chars (%d/%d)\n", validWord, outOfOrderLettersCount, len(outOfOrderChars))
 			}
 
-			invalidWords[validWord] = exists
-			removedWordsCount++
+			goto markAsIncorrect
 		}
+
+		// The word is still valid, try the next.
+		continue
+
+	markAsIncorrect:
+		invalidWords[validWord] = exists
+		removedWordsCount++
 	}
 
 	// Update the list of possible valid word picks.
