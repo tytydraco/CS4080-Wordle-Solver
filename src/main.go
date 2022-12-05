@@ -10,8 +10,13 @@ const DEBUG = true
 const WORD_LEN = 5
 const NUM_TRIES = 6
 
+const OVERRIDE_FIRST_WORD = true
+const OVERRIDE_WORD = "salet"
+
 // Empty struct indicating that in item exists in a set.
 var exists = struct{}{}
+
+var firstGuess = true
 
 // Calculate the frequencies that letters appear in each position in the list of valid words.
 func GetLetterFrequencies() []map[rune]int {
@@ -225,6 +230,11 @@ func GetWordScores(frequencies []map[rune]int) map[string]int {
 
 // Calculate the highest score from possibleWords and returns the word with the highest score.
 func GetNextBestGuess() string {
+	if firstGuess && OVERRIDE_FIRST_WORD {
+		firstGuess = false
+		return OVERRIDE_WORD
+	}
+
 	letterFrequencies := GetLetterFrequencies()
 	scores := GetWordScores(letterFrequencies)
 
