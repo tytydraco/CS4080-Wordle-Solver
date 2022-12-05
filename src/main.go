@@ -80,29 +80,19 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 
 	// Keep track of the letters that were not present in the word at all.
 	incorrectLetters := make(map[string]struct{})
+	keptLetters := make(map[string]struct{})
 	for i, correctness := range letterCorrectness {
-		if correctness == Incorrect {
-			guessLetter := guessLetters[i]
-			incorrectLetters[guessLetter] = exists
-		}
-	}
+		guessLetter := guessLetters[i]
 
-	// TODO(tytydraco): Refactor this bit
-	//This loop checks to see if letters have been incorrectly added to the nonexsistenLetters map. If it has, it removes them from the map
-	/*
-		Example:
-			Sores
-			The first s is correct, the second s is nonexsistent
-			Without this loop, s would be added to the nonexsistentLetters list and s would be considered to not exsist at all in the word
-				This causes a problem, s IS in the word, it's just only present in the first space and not anywhere else
-			This loop iterates through the word twice and checks if the letter occurs twice, and was given different ratings in both occurances
-				If it does, and one of those instances it was rated as Nonexsistent, it is removed from the nonexsistent list as it does exsist, just not in that spot
-	*/
-	for i, correctness := range letterCorrectness {
-		for j, checkLetter := range letterCorrectness {
-			if guessLetters[i] == guessLetters[j] && ((correctness == Incorrect && checkLetter != Incorrect) || (checkLetter == Incorrect && correctness != Incorrect)) {
-				delete(incorrectLetters, guessLetters[i])
-			}
+		// Determine if we already decided that we need this letter.
+		_, letterAlreadyAdded := keptLetters[guessLetter]
+
+		// Mark the letter as incorrect, unless we decided we need this letter later.
+		if !letterAlreadyAdded && correctness == Incorrect {
+			incorrectLetters[guessLetter] = exists
+		} else {
+			// We need this letter!
+			keptLetters[guessLetter] = exists
 		}
 	}
 
