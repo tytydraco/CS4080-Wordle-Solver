@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -12,24 +11,6 @@ const NUM_TRIES = 6
 
 // Empty struct indicating that in item exists in a set.
 var exists = struct{}{}
-
-// List of valid words to choose from
-var validWords []string
-
-func GetValidWordList() []string {
-	readFile, _ := os.Open("words.txt")
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-
-	var fileLines []string
-	for fileScanner.Scan() {
-		fileLines = append(fileLines, fileScanner.Text())
-	}
-
-	readFile.Close()
-
-	return fileLines
-}
 
 // LetterFrequency calculates the frequency of each letter in each word of the possibleWords and
 // returns a slice of maps, where each map is a map of the letter to its frequency in that position.
@@ -230,8 +211,8 @@ func DidUserWin(feedback []LetterCorrectness) bool {
 }
 
 func main() {
-	validWords = GetValidWordList()
-	fmt.Println(len(validWords))
+	UpdateValidWordsList()
+	fmt.Printf("We have %d words to choose from...\n", len(validWords))
 
 	// Try to guess the word in the limited number of tries.
 	for i := 0; i < NUM_TRIES; i++ {
