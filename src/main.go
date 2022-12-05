@@ -118,8 +118,7 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 			guessLetter := guessLetters[i]
 
 			// Checks if the correct guess letter does not match the position in the current word.
-			letterIsCorrect := correctness == Correct
-			if letterIsCorrect && currentLetter != guessLetter {
+			if correctness == Correct && currentLetter != guessLetter {
 				invalidWords[validWord] = exists
 				removedWordsCount++
 				break
