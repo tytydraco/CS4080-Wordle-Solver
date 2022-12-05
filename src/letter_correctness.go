@@ -13,7 +13,7 @@ func (feedback LetterCorrectness) String() string {
 }
 
 var (
-	letterCorrectmessMap = map[string]LetterCorrectness{
+	letterCorrectnessMap = map[string]LetterCorrectness{
 		"c": Correct,
 		"o": OutOfOrder,
 		"i": Incorrect,

@@ -10,11 +10,11 @@ import (
 const WORD_LEN = 5
 const NUM_TRIES = 6
 
+// Empty struct indicating that in item exists in a set.
+var exists = struct{}{}
+
 // List of valid words to choose from
 var validWords []string
-
-// Contains a map of unordered words to choose from
-var unorderedWords map[string]int
 
 func GetValidWordList() []string {
 	readFile, _ := os.Open("words.txt")
@@ -71,20 +71,17 @@ func GetWordFeedback(word string) []LetterCorrectness {
 	feedback := make([]LetterCorrectness, 5)
 
 	for i, v := range letters {
+	letterFeedback:
 		var letterFeedbackStr string
 		fmt.Printf("%s: ", v)
 		fmt.Scanf("%s\n", &letterFeedbackStr)
 
-		letterFeedback, isPresent := letterCorrectmessMap[letterFeedbackStr]
+		letterFeedback, isPresent := letterCorrectnessMap[letterFeedbackStr]
 
 		// Todo: make this better
 		for !isPresent {
 			fmt.Println("Bad feedback! Try again.")
-			fmt.Printf("%s: ", v)
-			fmt.Scanf("%s\n", &letterFeedbackStr)
-
-			_, valid := letterCorrectmessMap[letterFeedbackStr]
-			isPresent = valid
+			goto letterFeedback
 		}
 
 		feedback[i] = letterFeedback
@@ -93,23 +90,19 @@ func GetWordFeedback(word string) []LetterCorrectness {
 	return feedback
 }
 
-func RemoveInvalidWords(feedback []LetterCorrectness, bestGuess string) int {
-	// TODO: Go through all feedbacks (right place, wrong place, or not exists)
-	//		 and remove words in the validWords that aren't possible answers.
-	//		 Return the number of entries eliminated.
+func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string) int {
 	guessLetters := strings.Split(bestGuess, "")
-	nonexistentLetters := make(map[string]int)
-	invalidWordsMap := make(map[string]int)
+	incorrectLetters := make(map[string]int)
 
-	var invalidWords int = 0
-
-	//	Create a nonexistent letter map
-	for j, letter := range feedback { //Adds non exsistent letters into nonexsistentLetters map
-		if letter == Incorrect {
-			nonexistentLetters[guessLetters[j]] = 0
+	// Keep track of the letters that were not present in the word at all.
+	for i, correctness := range letterCorrectness {
+		if correctness == Incorrect {
+			guessLetter := guessLetters[i]
+			incorrectLetters[guessLetter] = 0
 		}
 	}
 
+	// TODO(tytydraco): Refactor this bit
 	//This loop checks to see if letters have been incorrectly added to the nonexsistenLetters map. If it has, it removes them from the map
 	/*
 		Example:
@@ -120,72 +113,80 @@ func RemoveInvalidWords(feedback []LetterCorrectness, bestGuess string) int {
 			This loop iterates through the word twice and checks if the letter occurs twice, and was given different ratings in both occurances
 				If it does, and one of those instances it was rated as Nonexsistent, it is removed from the nonexsistent list as it does exsist, just not in that spot
 	*/
-	for i, letter := range feedback {
-		for j, checkLetter := range feedback {
-			if guessLetters[i] == guessLetters[j] && ((letter == Incorrect && checkLetter != Incorrect) || (checkLetter == Incorrect && letter != Incorrect)) {
-				delete(nonexistentLetters, guessLetters[i])
+	for i, correctness := range letterCorrectness {
+		for j, checkLetter := range letterCorrectness {
+			if guessLetters[i] == guessLetters[j] && ((correctness == Incorrect && checkLetter != Incorrect) || (checkLetter == Incorrect && correctness != Incorrect)) {
+				delete(incorrectLetters, guessLetters[i])
 			}
 		}
 	}
 
-	//	Goes through list of validWords, iterates through each character
-	//	If any do not fit the feedback, it is added to the invalidWordsMap
-	for _, v := range validWords {
-		var unorderedWordCount int = 0
-		validLetters := strings.Split(v, "")
-		for j := range feedback {
-			_, nonexistent := nonexistentLetters[validLetters[j]]
-			_, letterIsPresent := unorderedWords[validLetters[j]]
+	// Checks which words from the possible picks list no longer work.
+	invalidWords := make(map[string]struct{})
+	outOfOrderChars := make(map[string]struct{})
+	removedWordsCount := 0
 
-			// Checks if the correct characters are in the correct place.
-			if feedback[j] == Correct && validLetters[j] != guessLetters[j] {
-				invalidWordsMap[v] = 0
-				invalidWords++
+	for _, validWord := range validWords {
+		outOfOrderLettersCount := 0
+		validWordLetters := strings.Split(validWord, "")
+		for i, correctness := range letterCorrectness {
+			currentLetter := validWordLetters[i]
+			guessLetter := guessLetters[i]
+
+			// Checks if the correct guess letter does not match the position in the current word.
+			letterIsCorrect := correctness == Correct
+			if letterIsCorrect && currentLetter != guessLetter {
+				invalidWords[validWord] = exists
+				removedWordsCount++
 				break
 			}
 
-			//	Checks if word has unordered characters
-			if validLetters[j] == guessLetters[j] && feedback[j] == OutOfOrder {
-				invalidWordsMap[v] = 0
-				invalidWords++
-				if !letterIsPresent {
-					unorderedWords[validLetters[j]] = 0
-				}
+			// Checks if the current guess letter is supposed to be incorrectly positioned (but exists!), yet
+			// matches the correct position in the current word.
+			if correctness == OutOfOrder && currentLetter == guessLetter {
+				invalidWords[validWord] = exists
+				removedWordsCount++
+
+				// Add this letter to the set of letters that are out of order.
+				outOfOrderChars[currentLetter] = exists
+
 				break
 			}
 
-			//	Checks if word contains nonexistent characters
-			if nonexistent && !letterIsPresent {
-				invalidWordsMap[v] = 0
-				invalidWords++
+			// TODO(tytydraco): Refactor this bit.
+			// Checks if the current letter is not supposed to be in the word.
+			_, letterIsIncorrect := incorrectLetters[currentLetter]
+			_, letterIsOutOfOrder := outOfOrderChars[currentLetter]
+			if letterIsIncorrect && !letterIsOutOfOrder {
+				invalidWords[validWord] = exists
+				removedWordsCount++
 				break
 			}
 
 			// Checks if a nonexistent character is in the word
-			if letterIsPresent {
-				unorderedWordCount++
+			if letterIsOutOfOrder {
+				outOfOrderLettersCount++
 			}
 		}
 
-		if unorderedWordCount < len(unorderedWords) && len(unorderedWords) != 0 {
-			invalidWordsMap[v] = 0
-			invalidWords++
+		if len(outOfOrderChars) != 0 && outOfOrderLettersCount < len(outOfOrderChars) {
+			invalidWords[validWord] = exists
+			removedWordsCount++
 		}
 	}
 
-	// Checks if word from validWords array exists in invalidWordsMap.
-	// If not it does not add it to newValidWords array
+	// Update the list of possible valid word picks.
 	var newValidWords []string
 	for _, v := range validWords {
-		_, isPresent := invalidWordsMap[v]
+		_, isInvalid := invalidWords[v]
 
-		if !isPresent {
+		if !isInvalid {
 			newValidWords = append(newValidWords, v)
 		}
 	}
 
 	validWords = newValidWords
-	return invalidWords
+	return removedWordsCount
 }
 
 // ChooseNextBestGuess calculates the highest score from possibleWords and returns
@@ -218,7 +219,6 @@ func allCorrect(feedback []LetterCorrectness) bool {
 
 func main() {
 	validWords = GetValidWordList()
-	unorderedWords = make(map[string]int)
 	fmt.Println(len(validWords))
 
 	for i := 0; i < NUM_TRIES; i++ {
