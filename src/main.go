@@ -76,6 +76,11 @@ func GetWordFeedback(word string) []LetterCorrectness {
 		fmt.Printf("%s: ", v)
 		fmt.Scanf("%s\n", &letterFeedbackStr)
 
+		if letterFeedbackStr == "q" {
+			fmt.Println("Goodbye :)")
+			os.Exit(0)
+		}
+
 		letterFeedback, isPresent := letterCorrectnessMap[letterFeedbackStr]
 
 		// Todo: make this better
