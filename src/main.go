@@ -101,6 +101,7 @@ func GetWordFeedback(word string) []LetterCorrectness {
 	return feedback
 }
 
+// Given feedback from the user and the best guess we recommended, eliminate words that are definitely not the answer.
 func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string) int {
 	guessLetters := strings.Split(bestGuess, "")
 	incorrectLetters := make(map[string]int)
@@ -200,11 +201,10 @@ func RemoveInvalidWords(letterCorrectness []LetterCorrectness, bestGuess string)
 	return removedWordsCount
 }
 
-// ChooseNextBestGuess calculates the highest score from possibleWords and returns
-// the word with the highest score.
+// Calculate the highest score from possibleWords and returns the word with the highest score.
 func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) string {
 	maxScore := 0
-	bestWord := "words"
+	var bestWord string
 	scores := WordScore(possibleWords, frequencies)
 
 	// Get the word with the highest score
@@ -218,7 +218,8 @@ func ChooseNextBestGuess(possibleWords []string, frequencies []map[byte]int) str
 	return bestWord
 }
 
-func allCorrect(feedback []LetterCorrectness) bool {
+// Return true if the user guessed the word.
+func DidUserWin(feedback []LetterCorrectness) bool {
 	for _, i := range feedback {
 		if i != Correct {
 			return false
@@ -232,21 +233,25 @@ func main() {
 	validWords = GetValidWordList()
 	fmt.Println(len(validWords))
 
+	// Try to guess the word in the limited number of tries.
 	for i := 0; i < NUM_TRIES; i++ {
 		fmt.Printf("Attempt %d/%d\n", i+1, NUM_TRIES)
-		nextBestGuess := ChooseNextBestGuess(validWords, LetterFrequency(validWords))
 
+		// Pick which word the user should guess.
+		nextBestGuess := ChooseNextBestGuess(validWords, LetterFrequency(validWords))
 		fmt.Printf("Best pick: %s\n", nextBestGuess)
+
+		// Collect feedback on how we did.
 		feedback := GetWordFeedback(nextBestGuess)
 
-		if allCorrect(feedback) {
+		// Check if the user won, and exit if they did.
+		if DidUserWin(feedback) {
 			fmt.Println("My work here is done :-)")
 			break
 		}
 
+		// Tell the user how many words we were able to eliminate.
 		removed := RemoveInvalidWords(feedback, nextBestGuess)
-		// TODO: Also remove our guess
-		fmt.Printf("Eliminated %d words!\n", removed)
-		fmt.Println()
+		fmt.Printf("Eliminated %d words!\n\n", removed)
 	}
 }
